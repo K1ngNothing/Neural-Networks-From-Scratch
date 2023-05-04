@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
+#include <definitions.h>
+#include <Layer/layer.h>
+#include <PenaltyFunction/penalty_function.h>
 
-#include "definitions.h"
-#include "DistanceFunction/distance_function.h"
-#include "SigmaFunction/sigma_function.h"
+#include <vector>
 
 namespace model {
 
@@ -14,57 +14,29 @@ struct TrainingPair {
 
     TrainingPair(Vector x, Vector y) : input(std::move(x)), output(std::move(y)) {
     }
-    TrainingPair(Vector&& x, Vector&& y) : input(std::move(x)), output(std::move(y)) {
-    }
 };
 
 class Model {
-private:
-    class Layer {
-    public:
-        Layer() = default;
-        Layer(size_t m, size_t n);
-
-    public:
-        Vector PushVector(Vector x);
-        RowVector PushGradient(RowVector u);
-        void UpdateDelta(RowVector u, double modifier);
-        void ApplyChanges();
-
-    private:
-        Matrix A_;  // Lineral paramethers of Layer
-        Vector b_;
-        sigma_functions::SigmaFunction sigma_ =
-            sigma_functions::Sigmoid();  // Non-lineral paramether of Layer
-
-        Vector last_input_;
-
-        Matrix delta_A_;
-        Vector delta_b_;
-    };
+public:
+    Model(const std::vector<size_t>& layer_sizes,
+          const std::vector<ActivationFunction>& layer_activation_functions);
 
 public:
-    Model(size_t input_size, size_t output_size, size_t cnt_layers,
-          sigma_functions::SigmaFunction sigma);
+    double Train(const std::vector<TrainingPair>& training_data, size_t epoch_count,
+                 size_t batch_size, double stop_threshold, const PenaltyFunction& penalty_function,
+                 std::function<double(int)> learning_rate_function);
 
-public:
-    double Train(std::vector<TrainingPair> training_data,
-                 dist_functions::DistanceFunction dist_func,
-                 std::function<double(int)> modifier_func);
+    Vector Predict(const Vector& x) const;
 
-    std::vector<Vector> PredictBatch(std::vector<Vector> data);
-    Vector Predict(Vector x);
-
-    double AssessEffectiveness(std::vector<TrainingPair> test_data,
-                               dist_functions::DistanceFunction dist);
+    double GetAverageLoss(const std::vector<TrainingPair>& test_data,
+                          const PenaltyFunction& penalty_function) const;
 
 private:
-    double TrainOnePair(TrainingPair training_pair, dist_functions::DistanceFunction dist,
-                        double modifier);
+    double TrainOnePair(const TrainingPair& training_pair, const PenaltyFunction& penalty_function,
+                        double learning_rate);
     void ApplyDeltas();
 
 private:
-    size_t layers_count_;
     std::vector<Layer> layers_;
 };
 

@@ -1,27 +1,31 @@
-#include <model.h>
+#include "layer.h"
+
+#include <iostream>
 
 using namespace model;
 
-Model::Layer::Layer(size_t m, size_t n) {
-    A_ = Matrix::Random(m, n);
-    b_ = Vector::Random(m);
-
-    delta_A_ = Matrix::Zero(m, n);
-    delta_b_ = Vector::Zero(m);
-
-    sigma_ = sigma_functions::Sigmoid();
+Layer::Layer(size_t input_size, size_t output_size, const ActivationFunction& sigma)
+    : A_(Matrix::Random(output_size, input_size)),
+      b_(Vector::Zero(output_size)),
+      delta_A_(Matrix::Zero(output_size, input_size)),
+      delta_b_(Vector::Zero(output_size)),
+      sigma_(Sigmoid()) {  // change to sigma
 }
 
-Vector Model::Layer::PushVector(Vector x) {
+Vector Layer::PushVector(const Vector& x) const {
+    return sigma_(A_ * x + b_);
+}
+
+Vector Layer::PushVector(const Vector& x) {
     last_input_ = x;
     return sigma_(A_ * x + b_);
 }
 
-RowVector Model::Layer::PushGradient(RowVector u) {
+RowVector Layer::PushGradient(const RowVector& u) const {
     return u * sigma_[A_ * last_input_ + b_] * A_;
 }
 
-void Model::Layer::UpdateDelta(RowVector u, double modifier) {
+void Layer::UpdateDelta(const RowVector& u, double modifier) {
     Matrix d_sigma = sigma_[A_ * last_input_ + b_];
 
     Matrix grad_A = (last_input_ * u * d_sigma).transpose();
@@ -31,7 +35,9 @@ void Model::Layer::UpdateDelta(RowVector u, double modifier) {
     delta_b_ -= grad_b * modifier;
 }
 
-void Model::Layer::ApplyChanges() {
+void Layer::ApplyChanges() {
+    // std::cout << "ApplyChanges: max_da: " << delta_A_.maxCoeff() << " max_db: " <<
+    // delta_b_.maxCoeff() << std::endl;
     A_ += delta_A_;
     b_ += delta_b_;
 

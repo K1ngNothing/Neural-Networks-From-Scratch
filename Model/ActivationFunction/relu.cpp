@@ -1,9 +1,8 @@
-#include "sigma_function.h"
+#include "activation_function.h"
 
 using namespace model;
-using namespace sigma_functions;
 
-Vector ReLU::operator()(Vector x) {
+Vector ReLU::operator()(const Vector& x) const {
     size_t m = x.size();
     Vector result(m);
     for (size_t i = 0; i < m; i++) {
@@ -12,7 +11,7 @@ Vector ReLU::operator()(Vector x) {
     return result;
 }
 
-Matrix ReLU::operator[](Vector x) {
+Matrix ReLU::operator[](const Vector& x) const {
     size_t m = x.size();
     Matrix result = Matrix::Zero(m, m);
     for (size_t i = 0; i < m; i++) {
@@ -21,10 +20,10 @@ Matrix ReLU::operator[](Vector x) {
     return result;
 }
 
-double ReLU::calc_one_coordinate(double x) {
+double ReLU::calc_one_coordinate(double x) const {
     return (x > 0 ? x : 0);
 }
 
-double ReLU::calc_one_derivative(double x) {
+double ReLU::calc_one_derivative(double x) const {
     return (x > 0 ? 1 : 0);
 }

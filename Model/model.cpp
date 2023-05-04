@@ -1,81 +1,89 @@
 #include "model.h"
 
+#include <iostream>
+#include <ranges>
+
 using namespace model;
 
-Model::Model(size_t input_size, size_t output_size, size_t cnt_layers,
-        sigma_functions::SigmaFunction sigma)
-    : layers_count_(cnt_layers), layers_(cnt_layers) {
-    // The first (input_size - 1) layers use (input_size x input_size) matrix A_,
-    // the last layer -- (output_size x input_size)
-    assert(cnt_layers > 0 && "Model constructor: count of layers should be at least 1");
-    for (size_t i = 0; i < cnt_layers - 1; i++) {
-        layers_[i] = std::move(Layer(input_size, input_size));
+Model::Model(const std::vector<size_t>& layer_sizes,
+             const std::vector<ActivationFunction>& layer_activation_functions) {
+    assert(layer_sizes.size() == layer_activation_functions.size() + 1);
+    size_t layers_count = layer_activation_functions.size();
+    layers_.reserve(layers_count);
+    for (size_t i = 0; i < layers_count; i++) {
+        layers_.emplace_back(layer_sizes[i], layer_sizes[i + 1], layer_activation_functions[i]);
     }
-    layers_.back() = std::move(Layer(output_size, input_size));
 }
 
-double Model::TrainOnePair(TrainingPair training_pair, dist_functions::DistanceFunction dist,
-                           double modifier) {
+double Model::Train(const std::vector<TrainingPair>& training_data, size_t epoch_count,
+                    size_t batch_size, double stop_threshold,
+                    const PenaltyFunction& penalty_function,
+                    std::function<double(int)> learning_rate_function) {
+    double average_error_on_last_epoch = INFINITY;
+    for (size_t epoch = 0; epoch < epoch_count; epoch++) {
+        double current_average_error = 0;
+        for (size_t i = 0; i < training_data.size(); i++) {
+            current_average_error +=
+                TrainOnePair(training_data[i], penalty_function, learning_rate_function(epoch));
+            if (i % batch_size == 0) {
+                ApplyDeltas();
+            }
+        }
+        ApplyDeltas();
+        current_average_error /= training_data.size();
+        if (epoch % 100 == 0) {
+            std::cout << "epoch: " << epoch << " error: " << current_average_error
+                      << " rate: " << learning_rate_function(epoch) << std::endl;
+        }
+
+        if (average_error_on_last_epoch - current_average_error < stop_threshold) {
+            break;
+        }
+        average_error_on_last_epoch = current_average_error;
+    }
+    return average_error_on_last_epoch;
+}
+
+Vector Model::Predict(const Vector& x) const {
+    Vector result = x;
+    for (const auto& layer : layers_) {
+        result = layer.PushVector(result);
+    }
+    return result;
+}
+
+double Model::GetAverageLoss(const std::vector<TrainingPair>& test_data,
+                             const PenaltyFunction& penalty_function) const {
+    double total_loss = 0;
+    for (const TrainingPair& pair : test_data) {
+        Vector prediction = Predict(pair.input);
+        total_loss += penalty_function(prediction, pair.output);
+    }
+    return total_loss / test_data.size();
+}
+
+double Model::TrainOnePair(const TrainingPair& training_pair,
+                           const PenaltyFunction& penalty_function, double learning_rate) {
     Vector x = training_pair.input;
-    for (size_t i = 0; i < layers_count_; i++) {
-        x = layers_[i].PushVector(x);
+    for (auto& layer : layers_) {
+        x = layer.PushVector(x);
     }
 
-    Vector y0 = training_pair.output;
-    double result_deviation = dist(x, y0);
+    const Vector& y0 = training_pair.output;
+    double result_deviation = penalty_function(x, y0);
+    // std::cout << "prediction: " << x << " actual: " << y0 << std::endl;
 
-    RowVector u = dist.GetGradientX(x, y0);
-    for (ssize_t i = layers_count_ - 1; i >= 0; i--) {
-        layers_[i].UpdateDelta(u, modifier);
-        Vector new_grad = layers_[i].PushGradient(u);
-        u = new_grad;
+    RowVector u = penalty_function.GetGradientX(x, y0);
+
+    for (auto& layer : std::ranges::reverse_view(layers_)) {
+        layer.UpdateDelta(u, learning_rate);
+        u = layer.PushGradient(u);
     }
     return result_deviation;
 }
 
 void Model::ApplyDeltas() {
-    for (size_t i = 0; i < layers_count_; i++) {
-        layers_[i].ApplyChanges();
+    for (auto& layer : layers_) {
+        layer.ApplyChanges();
     }
-}
-
-double Model::Train(std::vector<TrainingPair> training_data,
-                    dist_functions::DistanceFunction dist_func,
-                    std::function<double (int)> modifier_func) {
-    double result = 0;  // an error on last training_pair
-    size_t i = 0;
-    for (const TrainingPair& pair : training_data) {
-        result = TrainOnePair(pair, dist_func, modifier_func(i));
-
-        // TODO: implement training with batches
-        ApplyDeltas();
-        i++;
-    }
-    return result;
-}
-
-Vector Model::Predict(Vector x) {
-    for (size_t i = 0; i < layers_count_; i++) {
-        x = layers_[i].PushVector(x);
-    }
-    return x;
-}
-
-std::vector<Vector> Model::PredictBatch(std::vector<Vector> data) {
-    std::vector<Vector> result;
-    result.reserve(data.size());
-    for (size_t i = 0; i < data.size(); i++) {
-        result.emplace_back(std::move(Predict(data[i])));
-    }
-    return result;
-}
-
-double Model::AssessEffectiveness(std::vector<TrainingPair> test_data,
-                                  dist_functions::DistanceFunction dist) {
-    double total_error = 0;
-    for (const TrainingPair& pair : test_data) {
-        Vector prediction = Predict(pair.input);
-        total_error += dist(prediction, pair.output);
-    }
-    return total_error / test_data.size();
 }

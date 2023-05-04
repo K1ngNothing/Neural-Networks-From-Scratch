@@ -1,11 +1,10 @@
 #include <cmath>
 
-#include "sigma_function.h"
+#include "activation_function.h"
 
 using namespace model;
-using namespace sigma_functions;
 
-Vector Sigmoid::operator()(Vector x) {
+Vector Sigmoid::operator()(const Vector& x) const {
     size_t m = x.size();
     Vector result(m);
     for (size_t i = 0; i < m; i++) {
@@ -14,7 +13,7 @@ Vector Sigmoid::operator()(Vector x) {
     return result;
 }
 
-Matrix Sigmoid::operator[](Vector x) {
+Matrix Sigmoid::operator[](const Vector& x) const {
     size_t m = x.size();
     Matrix result = Matrix::Zero(m, m);
     for (size_t i = 0; i < m; i++) {
@@ -23,10 +22,10 @@ Matrix Sigmoid::operator[](Vector x) {
     return result;
 }
 
-double Sigmoid::calc_one_coordinate(double x) {
+double Sigmoid::calc_one_coordinate(double x) const {
     return 1 / (1 + std::exp(-x));
 }
 
-double Sigmoid::calc_one_derivative(double x) {
+double Sigmoid::calc_one_derivative(double x) const {
     return std::exp(-x) / ((1 + std::exp(-x)) * (1 + std::exp(-x)));
 }
