@@ -32,10 +32,9 @@ void example_task() {
     std::vector<TrainingPair> testing_set = generate_data_set(input_size, 1000);
 
     // Train model
-    size_t epoch_count = 1000;
+    size_t epoch_count = 100;
     size_t batch_size = 10;
     auto learning_rate_function = [](size_t epoch) -> double {
-        // return 1.0;
         double start_learning_rate = 0.05;
         double decay = 0.005;
         return start_learning_rate / (1 + decay * epoch);
@@ -44,9 +43,16 @@ void example_task() {
     double last_epoch_error =
         model.Train(training_set, epoch_count, batch_size, threshold, EuklideanSquaredDist(),
                     std::function(learning_rate_function));
-    std::cout << "Average error on the last epoch: " << last_epoch_error << "\n";
+    std::cout << "Average loss on training_set: " << last_epoch_error << "\n";
 
-    // Check effectiveness
+    // Test model
     double average_error = model.GetAverageLoss(testing_set, EuklideanSquaredDist());
-    std::cout << "Average error on testing_set: " << average_error << "\n";
+    std::cout << "Average loss on testing_set: " << average_error << "\n";
+    for (size_t i = 0; i < 3; i++) {
+        const Vector& input = testing_set[i].input;
+        const Vector& answer = testing_set[i].output;
+
+        std::cout << "vector: (" << input.transpose() << "), prediction: " << model.Predict(input)
+                  << ", answer: " << answer << "\n";
+    }
 }

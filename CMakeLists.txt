@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include_directories(Eigen)
+include_directories(EigenRand)
 include_directories(Model)
 
 add_executable(NeuralNetwork 

@@ -71,7 +71,6 @@ double Model::TrainOnePair(const TrainingPair& training_pair,
 
     const Vector& y0 = training_pair.output;
     double result_deviation = penalty_function(x, y0);
-    // std::cout << "prediction: " << x << " actual: " << y0 << std::endl;
 
     RowVector u = penalty_function.GetGradientX(x, y0);
 
