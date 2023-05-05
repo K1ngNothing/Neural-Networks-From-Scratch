@@ -10,19 +10,21 @@ class ActivationFunction {
 private:
     class InnerBase {
     public:
-        virtual ~InnerBase() {
-        }
-        virtual std::unique_ptr<InnerBase> Clone() const = 0;
         virtual Vector operator()(const Vector& x) const = 0;
         virtual Matrix operator[](const Vector& x) const = 0;
+        virtual std::unique_ptr<InnerBase> Clone() const = 0;
+
+    public:
+        virtual ~InnerBase() {
+        }
     };
 
     template <typename T>
     class Inner : public InnerBase {
     public:
-        Inner(const T& other) : activation_function_(other) {
+        Inner(const T& activation_function) : activation_function_(activation_function) {
         }
-        Inner(T&& other) : activation_function_(std::move(other)) {
+        Inner(T&& activation_function) : activation_function_(std::move(activation_function)) {
         }
 
     public:
@@ -50,47 +52,15 @@ public:
     ActivationFunction(ActivationFunction&& other) : ptr_(std::move(other.ptr_)) {
     }
 
-    Vector operator()(const Vector& x) const {  // Sigma(x)
+    Vector operator()(const Vector& x) const {  // f(x)
         return (*ptr_)(x);
     }
-    Matrix operator[](const Vector& x) const {  // Sigma'(x)
+    Matrix operator[](const Vector& x) const {  // f'(x)
         return (*ptr_)[x];
     }
 
 private:
     std::unique_ptr<InnerBase> ptr_;
-};
-
-/// Pre-defined SimaFunctions
-
-class Sigmoid {
-public:
-    Vector operator()(const Vector& x) const;
-    Matrix operator[](const Vector& x) const;
-
-private:
-    double calc_one_coordinate(double x) const;
-    double calc_one_derivative(double x) const;
-};
-
-class ReLU {
-public:
-    Vector operator()(const Vector& x) const;
-    Matrix operator[](const Vector& x) const;
-
-private:
-    double calc_one_coordinate(double x) const;
-    double calc_one_derivative(double x) const;
-};
-
-class Lineral {
-public:
-    Vector operator()(const Vector& x) const {
-        return x;
-    }
-    Matrix operator[](const Vector& x) const {
-        return Vector::Ones(x.size());
-    }
 };
 
 }  // namespace model
