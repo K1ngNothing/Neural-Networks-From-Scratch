@@ -13,6 +13,7 @@ include_directories(Model)
 
 add_executable(NeuralNetwork 
                example_task.cpp
+               digits_recognition.cpp
                main.cpp
                Model/model.cpp
                Model/ActivationFunction/predefined.cpp

@@ -1,6 +1,6 @@
-#include "example_task.h"
+#include "digits_recognition.h"
 
 int main() {
-    example_task();
+    DigitsRecognition();
     return 0;
 }
