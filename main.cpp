@@ -1,6 +1,6 @@
 #include "example_task.h"
 
 int main() {
-    example_task();
+    ExampleTask();
     return 0;
 }

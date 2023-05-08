@@ -11,7 +11,7 @@ using namespace model;
 
 namespace {
 
-std::vector<TrainingPair> generate_data_set(size_t vector_size, size_t set_size) {
+std::vector<TrainingPair> GenerateDataSet(size_t vector_size, size_t set_size) {
     // Generates set_size pairs {vec, sum(vec)}
     std::vector<TrainingPair> set;
     set.reserve(set_size);
@@ -25,7 +25,7 @@ std::vector<TrainingPair> generate_data_set(size_t vector_size, size_t set_size)
 
 }  // namespace
 
-void example_task() {
+void ExampleTask() {
     // Task: by given vector return sum of it's coordinates
     size_t input_size = 4;
     size_t output_size = 1;
@@ -33,8 +33,8 @@ void example_task() {
     Model model({input_size, hidden_layer_size, output_size}, {ReLU(), Lineral()});
 
     // Generate data
-    std::vector<TrainingPair> training_set = generate_data_set(input_size, 100);
-    std::vector<TrainingPair> testing_set = generate_data_set(input_size, 1000);
+    std::vector<TrainingPair> training_set = GenerateDataSet(input_size, 100);
+    std::vector<TrainingPair> testing_set = GenerateDataSet(input_size, 1000);
 
     // Train model
     size_t epoch_count = 100;
