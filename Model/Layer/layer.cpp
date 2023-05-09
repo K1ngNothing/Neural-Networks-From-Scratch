@@ -3,7 +3,6 @@
 #include <rng.h>
 
 #include <EigenRand>
-#include <iostream>
 
 using namespace model;
 using namespace impl;

@@ -7,17 +7,15 @@
 #include <EigenRand>
 #include <iostream>
 
-using namespace model;
-
 namespace {
 
-std::vector<TrainingPair> GenerateDataSet(size_t vector_size, size_t set_size) {
+std::vector<model::TrainingPair> GenerateDataSet(size_t vector_size, size_t set_size) {
     // Generates set_size pairs {vec, sum(vec)}
-    std::vector<TrainingPair> set;
+    std::vector<model::TrainingPair> set;
     set.reserve(set_size);
     for (size_t i = 0; i < set_size; i++) {
-        Vector vector = Eigen::Rand::normal<model::Vector>(vector_size, 1, GetRNG());
-        Vector answer{{vector.sum()}};
+        model::Vector vector = Eigen::Rand::normal<model::Vector>(vector_size, 1, model::GetRNG());
+        model::Vector answer{{vector.sum()}};
         set.push_back({std::move(vector), std::move(answer)});
     }
     return set;
@@ -30,11 +28,12 @@ void ExampleTask() {
     size_t input_size = 4;
     size_t output_size = 1;
     size_t hidden_layer_size = 2;
-    Model model({input_size, hidden_layer_size, output_size}, {ReLU(), Lineral()});
+    model::Model model({input_size, hidden_layer_size, output_size},
+                       {model::ReLU(), model::Lineral()});
 
     // Generate data
-    std::vector<TrainingPair> training_set = GenerateDataSet(input_size, 100);
-    std::vector<TrainingPair> testing_set = GenerateDataSet(input_size, 1000);
+    std::vector<model::TrainingPair> training_set = GenerateDataSet(input_size, 100);
+    std::vector<model::TrainingPair> testing_set = GenerateDataSet(input_size, 1000);
 
     // Train model
     size_t epoch_count = 100;
@@ -43,19 +42,20 @@ void ExampleTask() {
     double starting_learning_rate = 0.1;
     double learning_rate_decay = 0.01;
 
-    double training_set_loss = model.Train(training_set, epoch_count, stop_threshold, batch_size,
-                                           starting_learning_rate, learning_rate_decay, MSE());
+    double training_set_loss =
+        model.Train(training_set, epoch_count, stop_threshold, batch_size, starting_learning_rate,
+                    learning_rate_decay, model::MSE());
     std::cout << "Average loss on training set: " << training_set_loss << "\n";
 
     // Test model
-    double testing_set_loss = model.GetAverageLoss(testing_set, MSE());
+    double testing_set_loss = model.GetAverageLoss(testing_set, model::MSE());
     std::cout << "Average loss on testing set: " << testing_set_loss << "\n";
 
     // Examples of predictions
     for (size_t i = 0; i < 3; i++) {
-        const Vector& input = testing_set[i].input;
-        const Vector& answer = testing_set[i].output;
-        Vector prediction = model.Predict(input);
+        const model::Vector& input = testing_set[i].input;
+        const model::Vector& answer = testing_set[i].output;
+        model::Vector prediction = model.Predict(input);
 
         std::cout << "vector: (" << input.transpose() << "), prediction: " << prediction
                   << ", answer: " << answer << "\n";

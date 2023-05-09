@@ -2,50 +2,51 @@
 
 #include <ActivationFunction/predefined.h>
 #include <byteswap.h>
-#include <fcntl.h>
 #include <LossFunction/predefined.h>
 #include <model.h>
 
+#include <fstream>
 #include <iostream>
+#include <string>
 
 namespace {
 
-int32_t Read_int32_t(int fd) {
+int32_t Read_int32_t(std::ifstream& ifs) {
     int32_t number = 0;
-    read(fd, &number, sizeof(number));
+    ifs.read(reinterpret_cast<char*>(&number), sizeof(number));
 
     // read number is high-endian, so we need to flip bytes
     number = bswap_32(number);
     return number;
 }
 
-model::Vector ReadOneImage(int images_fd, int32_t image_size) {
+model::Vector ReadOneImage(std::ifstream& images_ifs, int32_t image_size) {
     model::Vector image(image_size);
     for (size_t i = 0; i < image_size; i++) {
         unsigned char pixel = 0;
-        read(images_fd, &pixel, sizeof(pixel));
+        images_ifs.read(reinterpret_cast<char*>(&pixel), sizeof(pixel));
         image(i) = static_cast<double>(pixel);
     }
     return image;
 }
 
-model::Vector ReadOneLabel(int labels_fd) {
+model::Vector ReadOneLabel(std::ifstream& labels_ifs) {
     unsigned char label = 0;
-    read(labels_fd, &label, sizeof(label));
+    labels_ifs.read(reinterpret_cast<char*>(&label), sizeof(label));
     return model::Vector{{static_cast<double>(label)}};
 }
 
-void ReadMetaInformation(int images_fd, int labels_fd, int32_t& number_of_items,
-                         int32_t& image_size) {
-    int32_t images_magic_number = Read_int32_t(images_fd);
+void ReadMetaInformation(std::ifstream& images_ifs, std::ifstream& labels_ifs,
+                         int32_t& number_of_items, int32_t& image_size) {
+    int32_t images_magic_number = Read_int32_t(images_ifs);
     assert(images_magic_number == 2051 && "This is not a file with images");
-    int32_t number_of_images = Read_int32_t(images_fd);
-    int32_t rows = Read_int32_t(images_fd);
-    int32_t columns = Read_int32_t(images_fd);
+    int32_t number_of_images = Read_int32_t(images_ifs);
+    int32_t rows = Read_int32_t(images_ifs);
+    int32_t columns = Read_int32_t(images_ifs);
 
-    int32_t labels_magic_number = Read_int32_t(labels_fd);
+    int32_t labels_magic_number = Read_int32_t(labels_ifs);
     assert(labels_magic_number == 2049 && "This is not a file with labels");
-    int32_t number_of_labels = Read_int32_t(labels_fd);
+    int32_t number_of_labels = Read_int32_t(labels_ifs);
 
     assert(number_of_images == number_of_labels &&
            "Files with images and labels are not consistent with each other");
@@ -53,22 +54,14 @@ void ReadMetaInformation(int images_fd, int labels_fd, int32_t& number_of_items,
     image_size = rows * columns;
 }
 
-std::vector<model::TrainingPair> ReadImagesAndLabels(const char* path_to_images,
-                                                     const char* path_to_labels,
+std::vector<model::TrainingPair> ReadImagesAndLabels(const std::string& path_to_images,
+                                                     const std::string& path_to_labels,
                                                      ssize_t read_count = -1) {  // -1 = read all
-    int images_fd = open(path_to_images, O_RDONLY);
-    if (images_fd < 0) {
-        perror("Error while openning images");
-        return {};
-    }
-    int labels_fd = open(path_to_labels, O_RDONLY);
-    if (labels_fd < 0) {
-        perror("Error while openning labels");
-        return {};
-    }
+    std::ifstream images_ifs(path_to_images, std::ios::binary);
+    std::ifstream labels_ifs(path_to_labels, std::ios::binary);
 
     int32_t number_of_items, image_size;
-    ReadMetaInformation(images_fd, labels_fd, number_of_items, image_size);
+    ReadMetaInformation(images_ifs, labels_ifs, number_of_items, image_size);
     if (read_count >= 0) {
         number_of_items = read_count;
     }
@@ -76,7 +69,7 @@ std::vector<model::TrainingPair> ReadImagesAndLabels(const char* path_to_images,
     std::vector<model::TrainingPair> data_set;
     data_set.reserve(number_of_items);
     for (size_t i = 0; i < number_of_items; i++) {
-        data_set.push_back({ReadOneImage(images_fd, image_size), ReadOneLabel(labels_fd)});
+        data_set.push_back({ReadOneImage(images_ifs, image_size), ReadOneLabel(labels_ifs)});
     }
     return data_set;
 }
@@ -90,11 +83,10 @@ int GetPrediction(const model::Vector& assurance_in_answer) {
 }  // namespace
 
 void DigitsRecognition() {
-    size_t training_set_size = -1, testing_set_size = -1;
-    std::vector<model::TrainingPair> training_set = ReadImagesAndLabels(
-        "../MNISTDatabase/test-images", "../MNISTDatabase/test-labels", training_set_size);
-    std::vector<model::TrainingPair> testing_set = ReadImagesAndLabels(
-        "../MNISTDatabase/train-images", "../MNISTDatabase/train-labels", testing_set_size);
+    std::vector<model::TrainingPair> training_set =
+        ReadImagesAndLabels("../MNISTDatabase/test-images", "../MNISTDatabase/test-labels");
+    std::vector<model::TrainingPair> testing_set =
+        ReadImagesAndLabels("../MNISTDatabase/train-images", "../MNISTDatabase/train-labels");
 
     size_t input_size = training_set[0].input.size();  // 784
     size_t output_size = 10;
@@ -128,7 +120,8 @@ void DigitsRecognition() {
 
         int prediction = GetPrediction(assurance_in_answer);
 
-        std::cout << "model's assurance in answer:\n" << assurance_in_answer
-                  << "\nprediction: " << prediction << ", answer: " << answer << "\n";
+        std::cout << "model's assurance in answer:\n"
+                  << assurance_in_answer << "\nprediction: " << prediction << ", answer: " << answer
+                  << "\n";
     }
 }

@@ -12,11 +12,11 @@ include_directories(EigenRand/EigenRand)
 include_directories(Model)
 
 add_executable(NeuralNetwork 
-               example_task.cpp
                digits_recognition.cpp
+               example_task.cpp
                main.cpp
-               Model/model.cpp
                Model/ActivationFunction/predefined.cpp
-               Model/LossFunction/predefined.cpp
                Model/Layer/layer.cpp
+               Model/LossFunction/predefined.cpp
+               Model/model.cpp
                )

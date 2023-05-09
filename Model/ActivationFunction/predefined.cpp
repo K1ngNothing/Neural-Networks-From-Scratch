@@ -20,8 +20,6 @@ Matrix model::impl::GetJacobianMatrix(const Vector& x, std::function<double(doub
     return result;
 }
 
-#include <iostream>
-
 Vector SoftMax::operator()(const Vector& x) const {
     size_t m = x.size();
     double max_coefficient = x.maxCoeff();
