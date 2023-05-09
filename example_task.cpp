@@ -28,7 +28,7 @@ void ExampleTask() {
     size_t input_size = 4;
     size_t output_size = 1;
     size_t hidden_layer_size = 2;
-    model::Model model({input_size, hidden_layer_size, output_size}, 
+    model::Model model({input_size, hidden_layer_size, output_size},
                        {model::ReLU(), model::Lineral()});
 
     // Generate data
@@ -42,8 +42,9 @@ void ExampleTask() {
     double starting_learning_rate = 0.1;
     double learning_rate_decay = 0.01;
 
-    double training_set_loss = model.Train(training_set, epoch_count, stop_threshold, batch_size,
-                                           starting_learning_rate, learning_rate_decay, model::MSE());
+    double training_set_loss =
+        model.Train(training_set, epoch_count, stop_threshold, batch_size, starting_learning_rate,
+                    learning_rate_decay, model::MSE());
     std::cout << "Average loss on training set: " << training_set_loss << "\n";
 
     // Test model
