@@ -34,7 +34,7 @@ double Model::Train(const std::vector<TrainingPair>& training_data, size_t epoch
         }
         ApplyDeltas();
         average_loss_on_last_epoch /= training_data.size();
-        if (epoch % 5 == 0) {  // TODO: verbose option
+        if (epoch % 1 == 0) {  // TODO: verbose option
             std::cout << "epoch: " << epoch << ", loss: " << average_loss_on_last_epoch
                       << ", learning rate: " << learning_rate << std::endl;
         }
@@ -63,6 +63,19 @@ double Model::GetAverageLoss(const std::vector<TrainingPair>& test_data,
         total_loss += loss_function(prediction, pair.output);
     }
     return total_loss / test_data.size();
+}
+
+double Model::GetAccuracy(const std::vector<TrainingPair>& test_data) const {
+    int total_hits = 0;
+    for (const TrainingPair& pair : test_data) {
+        Vector assurace_in_answer = Predict(pair.input);
+
+        int prediction = -1;
+        assurace_in_answer.maxCoeff(&prediction);
+        int answer = static_cast<int>(pair.output(0));
+        total_hits += (prediction == answer);
+    }
+    return static_cast<double>(total_hits) / test_data.size();
 }
 
 double Model::TrainOnePair(const TrainingPair& training_pair, const LossFunction& loss_function,

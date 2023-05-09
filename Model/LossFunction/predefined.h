@@ -14,4 +14,10 @@ public:
     }
 };
 
+class CrossEntropy {
+public:
+    double operator()(const Vector& x, const Vector& y) const;
+    Vector GetGradientX(const Vector& x, const Vector& y) const;
+};
+
 }  // namespace model

@@ -62,4 +62,10 @@ public:
     }
 };
 
+class SoftMax {
+public:
+    Vector operator()(const Vector& x) const;
+    Matrix operator[](const Vector& x) const;
+};
+
 }  // namespace model

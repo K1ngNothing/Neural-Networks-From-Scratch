@@ -28,6 +28,8 @@ public:
     double GetAverageLoss(const std::vector<TrainingPair>& test_data,
                           const LossFunction& loss_function) const;
 
+    double GetAccuracy(const std::vector<TrainingPair>& test_data) const;
+
 private:
     double TrainOnePair(const TrainingPair& training_pair, const LossFunction& loss_function,
                         double learning_rate);

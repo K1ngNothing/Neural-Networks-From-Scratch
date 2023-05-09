@@ -17,5 +17,6 @@ add_executable(NeuralNetwork
                main.cpp
                Model/model.cpp
                Model/ActivationFunction/predefined.cpp
+               Model/LossFunction/predefined.cpp
                Model/Layer/layer.cpp
                )
