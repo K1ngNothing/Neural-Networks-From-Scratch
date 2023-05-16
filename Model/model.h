@@ -4,6 +4,7 @@
 #include <Layer/layer.h>
 #include <LossFunction/loss_function.h>
 
+#include <fstream>
 #include <vector>
 
 namespace model {
@@ -17,6 +18,8 @@ class Model {
 public:
     Model(const std::initializer_list<size_t>& layer_sizes,
           const std::initializer_list<ActivationFunction>& layer_activation_functions);
+    Model(const std::string& filename,
+          const std::initializer_list<ActivationFunction>& layer_activation_functions);
 
 public:
     double Train(const std::vector<TrainingPair>& training_data, size_t epoch_count,
@@ -29,6 +32,7 @@ public:
                           const LossFunction& loss_function) const;
 
     double GetAccuracy(const std::vector<TrainingPair>& test_data) const;
+    void Serialize(const std::string& filename) const;
 
 private:
     double TrainOnePair(const TrainingPair& training_pair, const LossFunction& loss_function,

@@ -8,6 +8,8 @@
 #include <iostream>
 
 namespace {
+constexpr size_t INPUT_SIZE = 4;
+constexpr size_t OUTPUT_SIZE = 1;
 
 std::vector<model::TrainingPair> GenerateDataSet(size_t vector_size, size_t set_size) {
     // Generates set_size pairs {vec, sum(vec)}
@@ -21,23 +23,15 @@ std::vector<model::TrainingPair> GenerateDataSet(size_t vector_size, size_t set_
     return set;
 }
 
-}  // namespace
-
-void ExampleTask() {
-    // Task: by given vector return sum of it's coordinates
-    size_t input_size = 4;
-    size_t output_size = 1;
+void TrainModel() {
     size_t hidden_layer_size = 2;
-    model::Model model({input_size, hidden_layer_size, output_size},
+    model::Model model({INPUT_SIZE, hidden_layer_size, OUTPUT_SIZE},
                        {model::ReLU(), model::Lineral()});
 
-    // Generate data
-    std::vector<model::TrainingPair> training_set = GenerateDataSet(input_size, 100);
-    std::vector<model::TrainingPair> testing_set = GenerateDataSet(input_size, 1000);
+    std::vector<model::TrainingPair> training_set = GenerateDataSet(INPUT_SIZE, 100);
 
-    // Train model
     size_t epoch_count = 100;
-    double stop_threshold = 1e-6;
+    double stop_threshold = 1e-12;
     size_t batch_size = 10;
     double starting_learning_rate = 0.1;
     double learning_rate_decay = 0.01;
@@ -47,7 +41,16 @@ void ExampleTask() {
                     learning_rate_decay, model::MSE());
     std::cout << "Average loss on training set: " << training_set_loss << "\n";
 
-    // Test model
+    // Save layers in file "layers.txt"
+    model.Serialize("example_task_layers.txt");
+}
+
+void TestModel() {
+    // Read layers from "layers.txt"
+    model::Model model("example_task_layers.txt", {model::ReLU(), model::Lineral()});
+
+    std::vector<model::TrainingPair> testing_set = GenerateDataSet(INPUT_SIZE, 1000);
+
     double testing_set_loss = model.GetAverageLoss(testing_set, model::MSE());
     std::cout << "Average loss on testing set: " << testing_set_loss << "\n";
 
@@ -60,4 +63,12 @@ void ExampleTask() {
         std::cout << "vector: (" << input.transpose() << "), prediction: " << prediction
                   << ", answer: " << answer << "\n";
     }
+}
+
+}  // namespace
+
+void ExampleTask() {
+    std::cout << "Example task: by vetor return sum of it's coordinates\n";
+    TrainModel();
+    TestModel();
 }

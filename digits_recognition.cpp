@@ -80,22 +80,19 @@ int GetPrediction(const model::Vector& assurance_in_answer) {
     return prediction;
 }
 
-}  // namespace
+constexpr size_t INPUT_SIZE = 784;
+constexpr size_t OUTPUT_SIZE = 10;
 
-void DigitsRecognition() {
+void TrainModel() {
     std::vector<model::TrainingPair> training_set =
         ReadImagesAndLabels("../MNISTDatabase/test-images", "../MNISTDatabase/test-labels");
-    std::vector<model::TrainingPair> testing_set =
-        ReadImagesAndLabels("../MNISTDatabase/train-images", "../MNISTDatabase/train-labels");
 
-    size_t input_size = training_set[0].input.size();  // 784
-    size_t output_size = 10;
-    size_t hidden_layer_size = 100;
-    model::Model model({input_size, hidden_layer_size, output_size},
+    size_t hidden_layer_size = 200;
+    model::Model model({INPUT_SIZE, hidden_layer_size, OUTPUT_SIZE},
                        {model::ReLU(), model::SoftMax()});
 
     size_t epoch_count = 1000;
-    double stop_threshold = 0.01;
+    double stop_threshold = 0.1;
     size_t batch_size = 10;
     double starting_learning_rate = 0.001;
     double learning_rate_decay = 0.01;
@@ -105,9 +102,16 @@ void DigitsRecognition() {
                     learning_rate_decay, model::CrossEntropy());
     std::cout << "Average loss on training set: " << training_set_loss << "\n";
     std::cout << "Accuracy on training set: " << model.GetAccuracy(training_set) << std::endl;
-    // Add training set accuracy
 
-    // Test model
+    model.Serialize("digits_recognition_layers.txt");
+}
+
+void TestModel() {
+    model::Model model("digits_recognition_layers.txt", {model::ReLU(), model::SoftMax()});
+
+    std::vector<model::TrainingPair> testing_set =
+        ReadImagesAndLabels("../MNISTDatabase/train-images", "../MNISTDatabase/train-labels", 1000);
+
     double testing_set_loss = model.GetAverageLoss(testing_set, model::CrossEntropy());
     std::cout << "Average loss on testing set: " << testing_set_loss << "\n";
     std::cout << "Accuracy on testing set: " << model.GetAccuracy(testing_set) << std::endl;
@@ -124,4 +128,12 @@ void DigitsRecognition() {
                   << assurance_in_answer << "\nprediction: " << prediction << ", answer: " << answer
                   << "\n";
     }
+}
+
+}  // namespace
+
+void DigitsRecognition() {
+    std::cout << "Digits recognition:\n";
+    TrainModel();
+    TestModel();
 }

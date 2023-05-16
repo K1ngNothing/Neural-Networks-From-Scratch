@@ -17,6 +17,19 @@ Model::Model(const std::initializer_list<size_t>& layer_sizes,
     }
 }
 
+Model::Model(const std::string& filename,
+             const std::initializer_list<ActivationFunction>& layer_activation_functions) {
+    std::ifstream ifstream(filename, std::ios::binary);
+    size_t layers_count;
+    ifstream.read(reinterpret_cast<char*>(&layers_count), sizeof(layers_count));
+    assert(layers_count == layer_activation_functions.size());
+
+    layers_.reserve(layers_count);
+    for (size_t i = 0; i < layers_count; i++) {
+        layers_.emplace_back(ifstream, *(layer_activation_functions.begin() + i));
+    }
+}
+
 double Model::Train(const std::vector<TrainingPair>& training_data, size_t epoch_count,
                     double stop_threshold, size_t batch_size, double starting_learning_rate,
                     double learning_rate_decay, const LossFunction& loss_function) {
@@ -76,6 +89,15 @@ double Model::GetAccuracy(const std::vector<TrainingPair>& test_data) const {
         total_hits += (prediction == answer);
     }
     return static_cast<double>(total_hits) / test_data.size();
+}
+
+void Model::Serialize(const std::string& filename) const {
+    std::ofstream ofstream(filename, std::ios::binary);
+    size_t layers_count = layers_.size();
+    ofstream.write(reinterpret_cast<char*>(&layers_count), sizeof(layers_count));
+    for (const impl::Layer& layer : layers_) {
+        layer.Serialize(ofstream);
+    }
 }
 
 double Model::TrainOnePair(const TrainingPair& training_pair, const LossFunction& loss_function,

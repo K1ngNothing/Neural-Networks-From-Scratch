@@ -7,6 +7,18 @@
 using namespace model;
 using namespace impl;
 
+namespace {
+template <typename T>
+void Read(std::ifstream& ifstream, T& result) {
+    ifstream.read(reinterpret_cast<char*>(&result), sizeof(result));
+}
+
+template <typename T>
+void Write(std::ofstream& ofstream, const T& result) {
+    ofstream.write(reinterpret_cast<const char*>(&result), sizeof(result));
+}
+}  // namespace
+
 Layer::Layer(size_t input_size, size_t output_size, const ActivationFunction& sigma)
     : A_(Eigen::Rand::normal<Matrix>(output_size, input_size, GetRNG()) * 0.01),
       b_(Vector::Zero(output_size)),
@@ -14,6 +26,22 @@ Layer::Layer(size_t input_size, size_t output_size, const ActivationFunction& si
       delta_A_(Matrix::Zero(output_size, input_size)),
       delta_b_(Vector::Zero(output_size)),
       delta_count_(0) {
+}
+
+Layer::Layer(std::ifstream& ifstream, const ActivationFunction& sigma) : sigma_(sigma) {
+    size_t m, n;
+    Read(ifstream, m);
+    Read(ifstream, n);
+    A_.resize(m, n);
+    b_.resize(m);
+    for (size_t i = 0; i < m; i++) {
+        for (size_t j = 0; j < n; j++) {
+            Read(ifstream, A_(i, j));
+        }
+    }
+    for (size_t i = 0; i < m; i++) {
+        Read(ifstream, b_(i));
+    }
 }
 
 Vector Layer::PushVector(const Vector& x) {
@@ -48,5 +76,19 @@ void Layer::ApplyChanges() {
         delta_A_ = Matrix::Zero(A_.rows(), A_.cols());
         delta_b_ = Vector::Zero(b_.size());
         delta_count_ = 0;
+    }
+}
+
+void Layer::Serialize(std::ofstream& ofstream) const {
+    size_t m = A_.rows(), n = A_.cols();
+    Write(ofstream, m);
+    Write(ofstream, n);
+    for (size_t i = 0; i < m; i++) {
+        for (size_t j = 0; j < n; j++) {
+            Write(ofstream, A_(i, j));
+        }
+    }
+    for (size_t i = 0; i < m; i++) {
+        Write(ofstream, b_(i));
     }
 }
