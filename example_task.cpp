@@ -2,6 +2,7 @@
 
 #include <ActivationFunction/predefined.h>
 #include <LossFunction/predefined.h>
+#include <model.h>
 #include <rng.h>
 
 #include <EigenRand>
@@ -10,6 +11,8 @@
 namespace {
 constexpr size_t INPUT_SIZE = 4;
 constexpr size_t OUTPUT_SIZE = 1;
+constexpr size_t TRAINING_SET_SIZE = 100;
+constexpr size_t TESTING_SET_SIZE = 1000;
 
 std::vector<model::TrainingPair> GenerateDataSet(size_t vector_size, size_t set_size) {
     // Generates set_size pairs {vec, sum(vec)}
@@ -28,7 +31,7 @@ void TrainModel() {
     model::Model model({INPUT_SIZE, hidden_layer_size, OUTPUT_SIZE},
                        {model::ReLU(), model::Lineral()});
 
-    std::vector<model::TrainingPair> training_set = GenerateDataSet(INPUT_SIZE, 100);
+    std::vector<model::TrainingPair> training_set = GenerateDataSet(INPUT_SIZE, TRAINING_SET_SIZE);
 
     size_t epoch_count = 100;
     double stop_threshold = 1e-12;
@@ -49,7 +52,7 @@ void TestModel() {
     // Read layers from "layers.txt"
     model::Model model("example_task_layers.txt", {model::ReLU(), model::Lineral()});
 
-    std::vector<model::TrainingPair> testing_set = GenerateDataSet(INPUT_SIZE, 1000);
+    std::vector<model::TrainingPair> testing_set = GenerateDataSet(INPUT_SIZE, TESTING_SET_SIZE);
 
     double testing_set_loss = model.GetAverageLoss(testing_set, model::MSE());
     std::cout << "Average loss on testing set: " << testing_set_loss << "\n";

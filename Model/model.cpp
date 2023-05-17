@@ -3,7 +3,7 @@
 #include <iostream>
 #include <ranges>
 
-using namespace model;
+namespace model {
 
 Model::Model(const std::initializer_list<size_t>& layer_sizes,
              const std::initializer_list<ActivationFunction>& layer_activation_functions) {
@@ -47,13 +47,12 @@ double Model::Train(const std::vector<TrainingPair>& training_data, size_t epoch
         }
         ApplyDeltas();
         average_loss_on_last_epoch /= training_data.size();
-        if (epoch % 1 == 0) {  // TODO: verbose option
-            std::cout << "epoch: " << epoch << ", loss: " << average_loss_on_last_epoch
-                      << ", learning rate: " << learning_rate << std::endl;
-        }
+        std::cout << "epoch: " << epoch << ", loss: " << average_loss_on_last_epoch
+                  << ", learning rate: " << learning_rate << std::endl;
 
         if (average_loss_on_last_epoch < stop_threshold) {
-            std::cout << "stopped at epoch " << epoch << std::endl;
+            std::cout << "stopped at epoch " << epoch << ", loss: " << average_loss_on_last_epoch
+                      << ", learning rate: " << learning_rate << std::endl;
             break;
         }
     }
@@ -63,7 +62,7 @@ double Model::Train(const std::vector<TrainingPair>& training_data, size_t epoch
 Vector Model::Predict(const Vector& x) const {
     Vector result = x;
     for (const auto& layer : layers_) {
-        result = layer.PushVector(result);
+        result = layer.ApplyToVector(result);
     }
     return result;
 }
@@ -124,3 +123,5 @@ void Model::ApplyDeltas() {
         layer.ApplyChanges();
     }
 }
+
+}  // namespace model

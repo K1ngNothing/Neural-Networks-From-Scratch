@@ -4,10 +4,10 @@
 
 #include <EigenRand>
 
-using namespace model;
-using namespace impl;
-
+namespace model {
+namespace impl {
 namespace {
+
 template <typename T>
 void Read(std::ifstream& ifstream, T& result) {
     ifstream.read(reinterpret_cast<char*>(&result), sizeof(result));
@@ -17,6 +17,7 @@ template <typename T>
 void Write(std::ofstream& ofstream, const T& result) {
     ofstream.write(reinterpret_cast<const char*>(&result), sizeof(result));
 }
+
 }  // namespace
 
 Layer::Layer(size_t input_size, size_t output_size, const ActivationFunction& sigma)
@@ -49,7 +50,7 @@ Vector Layer::PushVector(const Vector& x) {
     return sigma_(A_ * x + b_);
 }
 
-Vector Layer::PushVector(const Vector& x) const {
+Vector Layer::ApplyToVector(const Vector& x) const {
     return sigma_(A_ * x + b_);
 }
 
@@ -92,3 +93,6 @@ void Layer::Serialize(std::ofstream& ofstream) const {
         Write(ofstream, b_(i));
     }
 }
+
+}  // namespace impl
+}  // namespace model

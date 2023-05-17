@@ -21,7 +21,6 @@ public:
     Model(const std::string& filename,
           const std::initializer_list<ActivationFunction>& layer_activation_functions);
 
-public:
     double Train(const std::vector<TrainingPair>& training_data, size_t epoch_count,
                  double stop_threshold, size_t batch_size, double starting_learning_rate,
                  double learning_rate_decay, const LossFunction& loss_function);
@@ -39,7 +38,6 @@ private:
                         double learning_rate);
     void ApplyDeltas();
 
-private:
     std::vector<impl::Layer> layers_;
 };
 

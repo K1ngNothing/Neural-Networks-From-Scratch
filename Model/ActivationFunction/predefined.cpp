@@ -2,7 +2,11 @@
 
 using namespace model;
 
-Vector model::impl::ApplyCoordinateWise(const Vector& x, std::function<double(double)> function) {
+namespace model {
+
+namespace impl {
+
+Vector ApplyCoordinateWise(const Vector& x, double (*function)(double)) {
     size_t m = x.size();
     Vector result(m);
     for (size_t i = 0; i < m; i++) {
@@ -11,7 +15,7 @@ Vector model::impl::ApplyCoordinateWise(const Vector& x, std::function<double(do
     return result;
 }
 
-Matrix model::impl::GetJacobianMatrix(const Vector& x, std::function<double(double)> function) {
+Matrix GetJacobianMatrix(const Vector& x, double (*function)(double)) {
     size_t m = x.size();
     Matrix result = Matrix::Zero(m, m);
     for (size_t i = 0; i < m; i++) {
@@ -19,6 +23,8 @@ Matrix model::impl::GetJacobianMatrix(const Vector& x, std::function<double(doub
     }
     return result;
 }
+
+}  // namespace impl
 
 Vector SoftMax::operator()(const Vector& x) const {
     size_t m = x.size();
@@ -55,3 +61,4 @@ Matrix SoftMax::operator[](const Vector& x) const {
     }
     return result;
 }
+}  // namespace model

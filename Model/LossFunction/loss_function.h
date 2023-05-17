@@ -14,9 +14,7 @@ private:
         virtual Vector GetGradientX(const Vector& x, const Vector& y) const = 0;
         virtual std::unique_ptr<InnerBase> Clone() const = 0;
 
-    public:
-        virtual ~InnerBase() {
-        }
+        virtual ~InnerBase() = default;
     };
 
     template <typename T>
@@ -27,7 +25,6 @@ private:
         Inner(T&& loss_function) : loss_function_(std::move(loss_function)) {
         }
 
-    public:
         double operator()(const Vector& x, const Vector& y) const override {
             return loss_function_(x, y);
         }
@@ -46,10 +43,14 @@ public:
     template <typename T>
     LossFunction(T loss_function) : ptr_(std::make_unique<Inner<T>>(std::move(loss_function))) {
     }
-    LossFunction(const LossFunction& other) : ptr_(other.ptr_->Clone()) {
+    LossFunction(const LossFunction& other)
+        : ptr_(other.ptr_ == nullptr ? nullptr : other.ptr_->Clone()) {
     }
-    LossFunction(LossFunction&& other) : ptr_(std::move(other.ptr_)) {
+    LossFunction(LossFunction&& other) noexcept = default;
+    LossFunction& operator=(const LossFunction& other) {
+        return *this = LossFunction(other);
     }
+    LossFunction& operator=(LossFunction&& other) noexcept = default;
 
     double operator()(const Vector& x, const Vector& y) const {
         return (*ptr_)(x, y);

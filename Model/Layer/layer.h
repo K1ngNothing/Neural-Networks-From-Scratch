@@ -7,14 +7,14 @@
 
 namespace model {
 namespace impl {
+
 class Layer {
 public:
     Layer(size_t input_size, size_t output_size, const ActivationFunction& sigma);
     Layer(std::ifstream& ifstream, const ActivationFunction& sigma);
 
-public:
     Vector PushVector(const Vector& x);
-    Vector PushVector(const Vector& x) const;
+    Vector ApplyToVector(const Vector& x) const;
     RowVector PushGradient(const RowVector& u) const;
     void UpdateDelta(const RowVector& u, double learning_rate);
     void ApplyChanges();

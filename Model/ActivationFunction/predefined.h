@@ -5,8 +5,8 @@
 namespace model {
 namespace impl {
 
-Vector ApplyCoordinateWise(const Vector& x, std::function<double(double)> function);
-Matrix GetJacobianMatrix(const Vector& x, std::function<double(double)> function);
+Vector ApplyCoordinateWise(const Vector& x, double (*function)(double));
+Matrix GetJacobianMatrix(const Vector& x, double (*function)(double));
 
 namespace calculate_one_coordinate {
 

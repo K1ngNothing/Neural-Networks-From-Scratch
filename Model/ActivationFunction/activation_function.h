@@ -14,9 +14,7 @@ private:
         virtual Matrix operator[](const Vector& x) const = 0;
         virtual std::unique_ptr<InnerBase> Clone() const = 0;
 
-    public:
-        virtual ~InnerBase() {
-        }
+        virtual ~InnerBase() = default;
     };
 
     template <typename T>
@@ -27,7 +25,6 @@ private:
         Inner(T&& activation_function) : activation_function_(std::move(activation_function)) {
         }
 
-    public:
         Vector operator()(const Vector& x) const override {
             return activation_function_(x);
         }
@@ -47,10 +44,14 @@ public:
     ActivationFunction(T activation_function)
         : ptr_(std::make_unique<Inner<T>>(std::move(activation_function))) {
     }
-    ActivationFunction(const ActivationFunction& other) : ptr_(other.ptr_->Clone()) {
+    ActivationFunction(const ActivationFunction& other)
+        : ptr_(other.ptr_ == nullptr ? nullptr : other.ptr_->Clone()) {
     }
-    ActivationFunction(ActivationFunction&& other) : ptr_(std::move(other.ptr_)) {
+    ActivationFunction(ActivationFunction&& other) noexcept = default;
+    ActivationFunction& operator=(const ActivationFunction& other) {
+        return *this = ActivationFunction(other);
     }
+    ActivationFunction& operator=(ActivationFunction&& other) noexcept = default;
 
     Vector operator()(const Vector& x) const {  // f(x)
         return (*ptr_)(x);
