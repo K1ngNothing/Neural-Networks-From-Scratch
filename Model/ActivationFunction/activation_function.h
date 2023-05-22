@@ -9,7 +9,7 @@ namespace model {
 enum class AFType {
     Sigmoid,
     ReLU,
-    Lineral,
+    Linear,
     SoftMax,
 };
 

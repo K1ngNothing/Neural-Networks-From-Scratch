@@ -11,8 +11,8 @@ ActivationFunction AFFabric(AFType type) {
             return Sigmoid();
         case AFType::ReLU:
             return ReLU();
-        case AFType::Lineral:
-            return Lineral();
+        case AFType::Linear:
+            return Linear();
         case AFType::SoftMax:
             return SoftMax();
         default:

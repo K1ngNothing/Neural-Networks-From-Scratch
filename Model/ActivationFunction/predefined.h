@@ -64,7 +64,7 @@ private:
     const static AFType type_ = AFType::ReLU;
 };
 
-class Lineral {
+class Linear {
 public:
     Vector operator()(const Vector& x) const {
         return x;
@@ -77,7 +77,7 @@ public:
     }
 
 private:
-    const static AFType type_ = AFType::Lineral;
+    const static AFType type_ = AFType::Linear;
 };
 
 class SoftMax {

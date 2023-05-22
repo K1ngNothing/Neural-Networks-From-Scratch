@@ -20,7 +20,7 @@ public:
     void Serialize(FileReader& file_reader) const;
 
 private:
-    Matrix A_;  // Lineral paramethers of Layer
+    Matrix A_;  // Linear paramethers of Layer
     Vector b_;
     ActivationFunction sigma_;  // Non-lineral paramether of Layer
 

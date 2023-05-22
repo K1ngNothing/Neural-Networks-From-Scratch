@@ -29,7 +29,7 @@ std::vector<model::TrainingPair> GenerateDataSet(size_t vector_size, size_t set_
 void TrainModel() {
     size_t hidden_layer_size = 2;
     model::Model model({INPUT_SIZE, hidden_layer_size, OUTPUT_SIZE},
-                       {model::ReLU(), model::Lineral()});
+                       {model::ReLU(), model::Linear()});
 
     std::vector<model::TrainingPair> training_set = GenerateDataSet(INPUT_SIZE, TRAINING_SET_SIZE);
 
