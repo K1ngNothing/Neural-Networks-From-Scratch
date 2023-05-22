@@ -8,14 +8,25 @@ namespace model {
 namespace impl {
 namespace {
 
-template <typename T>
-void Read(std::ifstream& ifstream, T& result) {
-    ifstream.read(reinterpret_cast<char*>(&result), sizeof(result));
-}
+void ReadLayer(FileReader& file_reader, Matrix& A, Vector& b, ActivationFunction& sigma) {
+    AFType type;
+    file_reader.Read(type);
+    sigma = AFFabric(type);
 
-template <typename T>
-void Write(std::ofstream& ofstream, const T& result) {
-    ofstream.write(reinterpret_cast<const char*>(&result), sizeof(result));
+    size_t m, n;
+    file_reader.Read(m);
+    file_reader.Read(n);
+
+    A.resize(m, n);
+    b.resize(m);
+    for (size_t i = 0; i < m; i++) {
+        for (size_t j = 0; j < n; j++) {
+            file_reader.Read(A(i, j));
+        }
+    }
+    for (size_t i = 0; i < m; i++) {
+        file_reader.Read(b(i));
+    }
 }
 
 }  // namespace
@@ -29,20 +40,8 @@ Layer::Layer(size_t input_size, size_t output_size, const ActivationFunction& si
       delta_count_(0) {
 }
 
-Layer::Layer(std::ifstream& ifstream, const ActivationFunction& sigma) : sigma_(sigma) {
-    size_t m, n;
-    Read(ifstream, m);
-    Read(ifstream, n);
-    A_.resize(m, n);
-    b_.resize(m);
-    for (size_t i = 0; i < m; i++) {
-        for (size_t j = 0; j < n; j++) {
-            Read(ifstream, A_(i, j));
-        }
-    }
-    for (size_t i = 0; i < m; i++) {
-        Read(ifstream, b_(i));
-    }
+Layer::Layer(FileReader& file_reader) {
+    ReadLayer(file_reader, A_, b_, sigma_);
 }
 
 Vector Layer::PushVector(const Vector& x) {
@@ -80,17 +79,20 @@ void Layer::ApplyChanges() {
     }
 }
 
-void Layer::Serialize(std::ofstream& ofstream) const {
+void Layer::Serialize(FileReader& file_reader) const {
+    file_reader.Write(sigma_.GetType());
+
     size_t m = A_.rows(), n = A_.cols();
-    Write(ofstream, m);
-    Write(ofstream, n);
+    file_reader.Write(m);
+    file_reader.Write(n);
+
     for (size_t i = 0; i < m; i++) {
         for (size_t j = 0; j < n; j++) {
-            Write(ofstream, A_(i, j));
+            file_reader.Write(A_(i, j));
         }
     }
     for (size_t i = 0; i < m; i++) {
-        Write(ofstream, b_(i));
+        file_reader.Write(b_(i));
     }
 }
 

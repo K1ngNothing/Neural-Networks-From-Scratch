@@ -50,7 +50,7 @@ void TrainModel() {
 
 void TestModel() {
     // Read layers from "layers.txt"
-    model::Model model("example_task_layers.txt", {model::ReLU(), model::Lineral()});
+    model::Model model("example_task_layers.txt");
 
     std::vector<model::TrainingPair> testing_set = GenerateDataSet(INPUT_SIZE, TESTING_SET_SIZE);
 

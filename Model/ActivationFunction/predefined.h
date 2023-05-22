@@ -40,6 +40,12 @@ public:
     Matrix operator[](const Vector& x) const {
         return impl::GetJacobianMatrix(x, &impl::calculate_one_derivative::Sigmoid);
     }
+    AFType GetType() const {
+        return type_;
+    }
+
+private:
+    const static AFType type_ = AFType::Sigmoid;
 };
 
 class ReLU {
@@ -50,6 +56,12 @@ public:
     Matrix operator[](const Vector& x) const {
         return impl::GetJacobianMatrix(x, &impl::calculate_one_derivative::ReLU);
     }
+    AFType GetType() const {
+        return type_;
+    }
+
+private:
+    const static AFType type_ = AFType::ReLU;
 };
 
 class Lineral {
@@ -60,12 +72,24 @@ public:
     Matrix operator[](const Vector& x) const {
         return Matrix::Identity(x.size(), x.size());
     }
+    AFType GetType() const {
+        return type_;
+    }
+
+private:
+    const static AFType type_ = AFType::Lineral;
 };
 
 class SoftMax {
 public:
     Vector operator()(const Vector& x) const;
     Matrix operator[](const Vector& x) const;
+    AFType GetType() const {
+        return type_;
+    }
+
+private:
+    const static AFType type_ = AFType::SoftMax;
 };
 
 }  // namespace model

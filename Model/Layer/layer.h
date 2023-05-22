@@ -2,8 +2,7 @@
 
 #include <ActivationFunction/activation_function.h>
 #include <definitions.h>
-
-#include <fstream>
+#include <file_reader.h>
 
 namespace model {
 namespace impl {
@@ -11,14 +10,14 @@ namespace impl {
 class Layer {
 public:
     Layer(size_t input_size, size_t output_size, const ActivationFunction& sigma);
-    Layer(std::ifstream& ifstream, const ActivationFunction& sigma);
+    Layer(FileReader& file_reader);
 
     Vector PushVector(const Vector& x);
     Vector ApplyToVector(const Vector& x) const;
     RowVector PushGradient(const RowVector& u) const;
     void UpdateDelta(const RowVector& u, double learning_rate);
     void ApplyChanges();
-    void Serialize(std::ofstream& ofstream) const;
+    void Serialize(FileReader& file_reader) const;
 
 private:
     Matrix A_;  // Lineral paramethers of Layer

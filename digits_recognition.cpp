@@ -107,7 +107,7 @@ void TrainModel() {
 }
 
 void TestModel() {
-    model::Model model("digits_recognition_layers.txt", {model::ReLU(), model::SoftMax()});
+    model::Model model("digits_recognition_layers.txt");
 
     std::vector<model::TrainingPair> testing_set =
         ReadImagesAndLabels("../MNISTDatabase/train-images", "../MNISTDatabase/train-labels", 1000);

@@ -15,6 +15,7 @@ add_executable(NeuralNetwork
                digits_recognition.cpp
                example_task.cpp
                main.cpp
+               Model/ActivationFunction/activation_function.cpp
                Model/ActivationFunction/predefined.cpp
                Model/Layer/layer.cpp
                Model/LossFunction/predefined.cpp

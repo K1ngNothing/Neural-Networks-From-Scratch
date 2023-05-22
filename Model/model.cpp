@@ -1,4 +1,5 @@
 #include "model.h"
+#include "file_reader.h"
 
 #include <iostream>
 #include <ranges>
@@ -17,16 +18,14 @@ Model::Model(const std::initializer_list<size_t>& layer_sizes,
     }
 }
 
-Model::Model(const std::string& filename,
-             const std::initializer_list<ActivationFunction>& layer_activation_functions) {
-    std::ifstream ifstream(filename, std::ios::binary);
+Model::Model(const std::string& filename) {
+    impl::FileReader file_reader(filename);
     size_t layers_count;
-    ifstream.read(reinterpret_cast<char*>(&layers_count), sizeof(layers_count));
-    assert(layers_count == layer_activation_functions.size());
+    file_reader.Read(layers_count);
 
     layers_.reserve(layers_count);
     for (size_t i = 0; i < layers_count; i++) {
-        layers_.emplace_back(ifstream, *(layer_activation_functions.begin() + i));
+        layers_.emplace_back(file_reader);
     }
 }
 
@@ -91,11 +90,10 @@ double Model::GetAccuracy(const std::vector<TrainingPair>& test_data) const {
 }
 
 void Model::Serialize(const std::string& filename) const {
-    std::ofstream ofstream(filename, std::ios::binary);
-    size_t layers_count = layers_.size();
-    ofstream.write(reinterpret_cast<char*>(&layers_count), sizeof(layers_count));
+    impl::FileReader file_reader(filename);
+    file_reader.Write(layers_.size());
     for (const impl::Layer& layer : layers_) {
-        layer.Serialize(ofstream);
+        layer.Serialize(file_reader);
     }
 }
 

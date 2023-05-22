@@ -6,12 +6,20 @@
 
 namespace model {
 
+enum class AFType {
+    Sigmoid,
+    ReLU,
+    Lineral,
+    SoftMax,
+};
+
 class ActivationFunction {
 private:
     class InnerBase {
     public:
         virtual Vector operator()(const Vector& x) const = 0;
         virtual Matrix operator[](const Vector& x) const = 0;
+        virtual AFType GetType() const = 0;
         virtual std::unique_ptr<InnerBase> Clone() const = 0;
 
         virtual ~InnerBase() = default;
@@ -31,6 +39,9 @@ private:
         Matrix operator[](const Vector& x) const override {
             return activation_function_[x];
         }
+        AFType GetType() const override {
+            return activation_function_.GetType();
+        }
         std::unique_ptr<InnerBase> Clone() const override {
             return std::make_unique<Inner>(activation_function_);
         }
@@ -40,6 +51,7 @@ private:
     };
 
 public:
+    ActivationFunction() = default;
     template <typename T>
     ActivationFunction(T activation_function)
         : ptr_(std::make_unique<Inner<T>>(std::move(activation_function))) {
@@ -59,9 +71,14 @@ public:
     Matrix operator[](const Vector& x) const {  // f'(x)
         return (*ptr_)[x];
     }
+    AFType GetType() const {
+        return (*ptr_).GetType();
+    }
 
 private:
     std::unique_ptr<InnerBase> ptr_;
 };
+
+ActivationFunction AFFabric(AFType type);
 
 }  // namespace model
