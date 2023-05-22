@@ -1,9 +1,9 @@
 #pragma once
 
-#include "definitions.h"
-
 #include <fstream>
 #include <string>
+
+#include "definitions.h"
 
 namespace model {
 namespace impl {
@@ -28,4 +28,4 @@ private:
 };
 
 }  // namespace impl
-}
+}  // namespace model

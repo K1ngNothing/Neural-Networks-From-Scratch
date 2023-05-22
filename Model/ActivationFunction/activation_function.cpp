@@ -1,7 +1,8 @@
 #include "activation_function.h"
-#include "predefined.h"
 
 #include <stdexcept>
+
+#include "predefined.h"
 
 namespace model {
 ActivationFunction AFFabric(AFType type) {
