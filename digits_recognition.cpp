@@ -110,7 +110,7 @@ void TestModel() {
     model::Model model("digits_recognition_layers.txt");
 
     std::vector<model::TrainingPair> testing_set =
-        ReadImagesAndLabels("../MNISTDatabase/train-images", "../MNISTDatabase/train-labels", 1000);
+        ReadImagesAndLabels("../MNISTDatabase/train-images", "../MNISTDatabase/train-labels");
 
     double testing_set_loss = model.GetAverageLoss(testing_set, model::CrossEntropy());
     std::cout << "Average loss on testing set: " << testing_set_loss << "\n";

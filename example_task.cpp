@@ -44,12 +44,10 @@ void TrainModel() {
                     learning_rate_decay, model::MSE());
     std::cout << "Average loss on training set: " << training_set_loss << "\n";
 
-    // Save layers in file "layers.txt"
     model.Serialize("example_task_layers.txt");
 }
 
 void TestModel() {
-    // Read layers from "layers.txt"
     model::Model model("example_task_layers.txt");
 
     std::vector<model::TrainingPair> testing_set = GenerateDataSet(INPUT_SIZE, TESTING_SET_SIZE);
